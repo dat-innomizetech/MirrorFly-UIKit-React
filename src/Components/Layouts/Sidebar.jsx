@@ -27,8 +27,9 @@ import { showModal } from '../../Actions/PopUp';
 import { disconnectCallConnection } from '../../Helpers/Call/Call';
 import { callIntermediateScreen, resetConferencePopup } from '../../Actions/CallAction';
 import { NEW_CHAT_CONTACT_PERMISSION_DENIED, NEW_GROUP_CONTACT_PERMISSION_DENIED } from '../../Helpers/Chat/Constant';
-import { encryptAndStoreInLocalStorage} from '../WebChat/WebChatEncryptDecrypt';
+import { encryptAndStoreInLocalStorage } from '../WebChat/WebChatEncryptDecrypt';
 import userList from '../WebChat/RecentChat/userList';
+import { REACT_APP_LICENSE_KEY } from '../processENV';
 
 class Sidebar extends React.Component {
 
@@ -70,7 +71,7 @@ class Sidebar extends React.Component {
     }
 
     handleNewChat = () => {
-        if(this.props.contactPermission === 0){
+        if (this.props.contactPermission === 0) {
             this.props.handleContactPermissionPopup(true, NEW_CHAT_CONTACT_PERMISSION_DENIED);
             return;
         }
@@ -107,7 +108,7 @@ class Sidebar extends React.Component {
 
     //New group participant list
     handleCreateNewGroup = () => {
-        if(this.props.contactPermission === 0){
+        if (this.props.contactPermission === 0) {
             this.props.handleContactPermissionPopup(true, NEW_GROUP_CONTACT_PERMISSION_DENIED);
             return;
         }
@@ -263,6 +264,19 @@ class Sidebar extends React.Component {
             }
         }
 
+        const handleDeleteAccount = async () => {
+            const registerResult = await window.SDK.register(`3125${REACT_APP_LICENSE_KEY?.slice(0, 4)}`);
+            if (registerResult.statusCode === 200 && registerResult.message == "Success") {
+                window.SDK.login(registerResult.data.username, registerResult.data.password)
+                    .then(async (res) => {
+                        const deleteMyAccount = await window.SDK.deleteMyAccount("Reason", "");
+                        if (deleteMyAccount.statusCode === 200 && deleteMyAccount.message === "Success") {
+                            window.SDK.logout();
+                        }
+                    })
+            }
+        }
+
         return (
             <>
                 <div className="recent-chatlist">
@@ -270,6 +284,7 @@ class Sidebar extends React.Component {
                         {newChatStatus && <>
                             <div className="recent-chatlist-header">
                                 <WebChatVCard />
+                                <span onClick={() => handleDeleteAccount()}>Delete</span>
                                 <div className="profile-options">
                                     <i className="callLogs" onClick={this.handleCallLogs} title="Call logs">
                                         {callLogCount ?
@@ -330,7 +345,7 @@ class Sidebar extends React.Component {
                         </div>
                     }
                     {
-                        callLogs && <WebChatCallLogs handleBackStatus={this.handleBackFromCallLogs} handleContactPermissionPopup={this.props.handleContactPermissionPopup}/>
+                        callLogs && <WebChatCallLogs handleBackStatus={this.handleBackFromCallLogs} handleContactPermissionPopup={this.props.handleContactPermissionPopup} />
                     }
 
                     {settingStatus &&

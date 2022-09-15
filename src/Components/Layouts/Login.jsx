@@ -473,7 +473,7 @@ class Login extends React.Component {
                   onChange={this.handleInputChange}
                 />
               </div>
-              {!isSandboxMode() && (
+              {isSandboxMode() && (
                 <div className="form-control">
                   <label>Password</label>
                   <input
@@ -497,7 +497,7 @@ class Login extends React.Component {
   };
 
   renderLoginTemplate = () => {
-    if (REACT_APP_SKIP_OTP_LOGIN === "true") {
+    if (REACT_APP_SKIP_OTP_LOGIN === "false") {
       return this.renderUsernamePasswordTemplate();
     }
     return (
